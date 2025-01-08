@@ -18,16 +18,16 @@ def main():
         exit(0)
     signal.signal(signal.SIGINT, handler)
 
-    # bot功能开启
-    bot = Bot(config, wcf)
-    bot.enableReceivingMsg()  # 加队列
-    bot.KeepRunning()  # 保持程序运行
-
     # 工具功能开启
     BotTool = Tool(wcf)
     BotTool.SendTestText()  # 发送测试文本
     # 获取所有联系人到本地Excel文件中
     # BotTool.GetContactsonLocal()
+
+    # bot功能开启
+    bot = Bot(config, wcf)
+    bot.enableReceivingMsg()  # 加队列
+    bot.KeepRunning()  # 保持程序运行
 
 
 if __name__ == "__main__":

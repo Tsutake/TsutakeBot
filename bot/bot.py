@@ -6,9 +6,9 @@ import time
 
 from queue import Empty
 from threading import Thread
-from configuration import Config
 from wcferry import Wcf, WxMsg
-from job_mgmt import Job
+from .configuration import Config
+from .job_mgmt import Job
 
 
 class Bot(Job):
