@@ -5,8 +5,7 @@ import os
 import pandas as pd
 
 from datetime import datetime
-
-from wcferry import Wcf, WxMsg
+from wcferry import Wcf
 
 
 class Tool(object):
