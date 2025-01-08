@@ -9,4 +9,6 @@ logs/
 *.log
 *.log.*
 
-config.yaml
+*/config.yaml
+
+
