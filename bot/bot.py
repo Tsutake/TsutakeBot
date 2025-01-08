@@ -43,7 +43,7 @@ class Bot(Basebot):
                 return
 
             if msg.is_at(self.wxid):  # 被@
-                self.ReplyRecognition(msg)
+                self.toAt(msg)
 
             else:  # 其他消息
                 pass
@@ -66,7 +66,8 @@ class Bot(Basebot):
                     self.LOG.info("已更新")
                     self.wcf.send_text("更新配置成功", "TsutakeMini", "")
             else:
-                self.ReplyRecognition(msg)  # 闲聊
+                res = self.ReplyRecognition(msg)  # 私聊的回复
+                self.sendTextMsg(res, msg.sender)
 
     def enableReceivingMsg(self) -> None:
         """
@@ -117,12 +118,13 @@ class Bot(Basebot):
             self.LOG.info(f"To {receiver}: {ats}\r{msg}")
             self.wcf.send_text(f"{ats} {msg}", receiver, at_list)
 
-    def toAt(self, msg: WxMsg) -> None:
+    def toAt(self, msg: WxMsg) -> bool:
         """处理被 @ 消息
         :return:
         """
-        res = self.ReplyRecognition(msg)
+        res = self.ReplyRecognition(msg)  # 被@的回复
         self.sendTextMsg(res, msg.roomid, msg.sender)
+        return True
 
     def TempReply(self, msg: WxMsg) -> None:
         """
