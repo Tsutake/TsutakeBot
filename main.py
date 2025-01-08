@@ -5,7 +5,7 @@ import signal
 
 from wcferry import Wcf
 from bot.bot import Bot
-from gentool.tool import Tool
+from gutils.utils import Tool
 from bot.configuration import Config
 
 

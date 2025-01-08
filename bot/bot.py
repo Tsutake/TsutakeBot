@@ -1,50 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# bot/bot.py
 # 机器人主要功能
-import logging
-import time
-
 from queue import Empty
 from threading import Thread
 from wcferry import Wcf, WxMsg
+from typing import Union, Any, Dict
+from .basebot import Basebot
 from .configuration import Config
-from .job_mgmt import Job
+from feat.wcalendar import WCalendar
 
 
-class Bot(Job):
+class Bot(Basebot):
+
     # def __init__(self, wcf: Wcf, chat_type: int) -> None:
     def __init__(self, config: Config, wcf: Wcf) -> None:
-        # super().__init__()
-        self.wcf = wcf
-        self.config = config
-        self.LOG = logging.getLogger("Bot")
-        self.wxid = self.wcf.get_self_wxid()
-        self.allContacts = self.getAllContacts()
+        super().__init__(config, wcf)
+        self.wnl = WCalendar()  # 启用万年历功能
 
-    def sendTextMsg(self, msg: str, receiver: str, at_list: str = "") -> None:
-        """ 发送消息
-        :param msg: 消息字符串
-        :param receiver: 接收人wxid或者群id
-        :param at_list: 要@的wxid, @所有人的wxid为：notify@all
+    def ReplyRecognition(self, msg: WxMsg) -> Union[Dict[str, Any], str]:
         """
-        # msg 中需要有 @ 名单中一样数量的 @
-        ats = ""
-        if at_list:
-            if at_list == "notify@all":  # @所有人
-                ats = " @所有人"
-            else:
-                wxids = at_list.split(",")
-                for wxid in wxids:
-                    # 根据 wxid 查找群昵称
-                    ats += f" @{self.wcf.get_alias_in_chatroom(wxid, receiver)}"
+        回复识别
+        :return:
+        """
+        if '万年历' in msg.content:
+            date = "20250108"
+            resmsg = self.wnl.GetWcalendar(date, ignoreHoliday="False")
+            return resmsg
 
-        # {msg}{ats} 表示要发送的消息内容后面紧跟@，例如 北京天气情况为：xxx @张三
-        if ats == "":
-            self.LOG.info(f"To {receiver}: {msg}")
-            self.wcf.send_text(f"{msg}", receiver, at_list)
         else:
-            self.LOG.info(f"To {receiver}: {ats}\r{msg}")
-            self.wcf.send_text(f"{ats} {msg}", receiver, at_list)
+            pass
 
     def processMsg(self, msg: WxMsg) -> None:
         """
@@ -58,10 +43,9 @@ class Bot(Job):
                 return
 
             if msg.is_at(self.wxid):  # 被@
-                self.toAt(msg)
+                self.ReplyRecognition(msg)
 
             else:  # 其他消息
-                # self.toChengyu(msg)
                 pass
 
             return  # 处理完群聊信息，后面就不需要处理了
@@ -82,7 +66,7 @@ class Bot(Job):
                     self.LOG.info("已更新")
                     self.wcf.send_text("更新配置成功", "TsutakeMini", "")
             else:
-                self.TempReply(msg)  # 闲聊
+                self.ReplyRecognition(msg)  # 闲聊
 
     def enableReceivingMsg(self) -> None:
         """
@@ -106,6 +90,40 @@ class Bot(Job):
         # 创建守护线程
         Thread(target=innerProcessMsg, name="GetMessage", args=(self.wcf,), daemon=True).start()
 
+    def sendTextMsg(self, msg: str, receiver: str, at_list: str = "") -> None:
+        """ 发送消息
+        发送个人消息格式为sendTextMsg(msg, msg.sender)
+        发送群消息格式为sendTextMsg(msg, msg.roomid, msg.sender)
+        :param msg: 消息字符串
+        :param receiver: 接收人wxid或者群id
+        :param at_list: 要@的wxid, @所有人的wxid为：notify@all
+        """
+        # msg 中需要有 @ 名单中一样数量的 @
+        ats = ""
+        if at_list:
+            if at_list == "notify@all":  # @所有人
+                ats = " @所有人"
+            else:
+                wxids = at_list.split(",")
+                for wxid in wxids:
+                    # 根据 wxid 查找群昵称
+                    ats += f" @{self.wcf.get_alias_in_chatroom(wxid, receiver)}"
+
+        # {msg}{ats} 表示要发送的消息内容后面紧跟@，例如 北京天气情况为：xxx @张三
+        if ats == "":
+            self.LOG.info(f"To {receiver}: {msg}")
+            self.wcf.send_text(f"{msg}", receiver, at_list)
+        else:
+            self.LOG.info(f"To {receiver}: {ats}\r{msg}")
+            self.wcf.send_text(f"{ats} {msg}", receiver, at_list)
+
+    def toAt(self, msg: WxMsg) -> None:
+        """处理被 @ 消息
+        :return:
+        """
+        res = self.ReplyRecognition(msg)
+        self.sendTextMsg(res, msg.roomid, msg.sender)
+
     def TempReply(self, msg: WxMsg) -> None:
         """
         临时消息回复功能
@@ -117,28 +135,3 @@ class Bot(Job):
             self.sendTextMsg(parts[1], msg.roomid, msg.sender)
         else:
             self.sendTextMsg(rsp, msg.sender)
-
-    def toAt(self, msg: WxMsg) -> None:
-        """处理被 @ 消息
-        :param msg: 微信消息结构
-        :return: 处理状态，`True` 成功，`False` 失败
-        """
-        self.TempReply(msg)
-
-    def getAllContacts(self) -> dict:
-        """
-        获取所有联系人（包括好友、公众号、服务号、群成员……）
-        格式: {"wxid": "NickName"}
-        :return :contacts
-        """
-        contacts = self.wcf.query_sql("MicroMsg.db", "SELECT UserName, NickName FROM Contact;")
-        return {contact["UserName"]: contact["NickName"] for contact in contacts}
-
-    def KeepRunning(self) -> None:
-        """
-        保持bot持续运行不退出
-        :return: None
-        """
-        while True:
-            self.runPendingJobs()
-            time.sleep(1)
