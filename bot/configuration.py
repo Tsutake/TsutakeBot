@@ -13,8 +13,8 @@ class Config():
     def _load_cofig(self) -> dict:
         # 获取当前脚本运行处于的绝对目录
         pwd = os.path.dirname(os.path.abspath(__file__))
-        tempyaml = os.path.join(pwd, "conf", "config.yaml.template")
-        nyaml = os.path.join(pwd, "conf", "config.yaml")
+        tempyaml = os.path.join(pwd, "../conf", "config.yaml.template")
+        nyaml = os.path.join(pwd, "../conf", "config.yaml")
         try:
             with open(f"{nyaml}", "rb") as fp:
                 yconfig = yaml.safe_load(fp)

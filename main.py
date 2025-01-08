@@ -3,11 +3,10 @@
 # main类
 import signal
 
-from argparse import ArgumentParser
-from wcferry import Wcf, WxMsg
-from bot import Bot
-from tool import Tool
-from configuration import Config
+from wcferry import Wcf
+from bot.bot import Bot
+from gentool.tool import Tool
+from bot.configuration import Config
 
 
 def main():
