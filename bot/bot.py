@@ -64,7 +64,11 @@ class Bot(Basebot):
         if msg.from_group():
             # 如果在群里被 @
             if msg.roomid not in self.config.GROUPS:  # 不在配置的响应的群列表里，忽略
-                return
+                if '获取群id' in msg.content and msg.is_at(self.wxid) and self.config.Rootusr == msg.sender:
+                    self.sendTextMsg(f"群id为：{msg.roomid}", msg.sender)
+                    self.sendTextMsg("已私发群id", msg.roomid, msg.sender)
+                else:
+                    return
 
             if msg.is_at(self.wxid):  # 被@
                 self.toAt(msg)

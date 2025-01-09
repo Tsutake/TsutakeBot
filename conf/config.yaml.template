@@ -46,3 +46,6 @@ news:
 
 report_reminder:
   receivers: []  # 定时日报周报月报提醒（roomid 或者 wxid）
+
+rootusr:
+  username: []  # 超级管理员用户
