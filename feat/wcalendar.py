@@ -57,18 +57,16 @@ class WCalendar(object):
             res = f"请求失败，状态码：{response.status_code}, 错误信息：{response.text}"
             return res
 
-    def AnswerStr(self, wcalendar: str, status: int) -> str:
+    def AnswerStr(self, calendar: dict, status: int) -> str:
         """
         处理接受的json信息，并且根据状态码返回不同的回复
         :return: 回复字符串
         """
         try:
-            # 解析 JSON 字符串为字典
-            calendar = json.loads(wcalendar)
             if status == 1:  # 今日黄历
                 if calendar["code"] == 1:
                     data = calendar["data"]
-                    dictprocess = self.dictProcess(wcalendar)
+                    dictprocess = self.dictProcess(calendar)
                     date = datetime.strptime(calendar["date"], "%Y-%m-%d")  # 日期
                     res = (f"今天是{date.year}年{date.month}月{date.day}日，"
                            f"{data['yearTips']}{data['chineseZodiac']}年{data['lunarCalendar']},"
@@ -87,9 +85,8 @@ class WCalendar(object):
             res = f"缺少必要的字段: {str(e)}"
         return res
 
-    def dictProcess(self, wcalendar: str) -> dict:
+    def dictProcess(self, calendar: dict) -> dict:
         res = {}
-        calendar = json.loads(wcalendar)
         data = calendar["data"]
         # 星期字典
         weekDayMapping = {
