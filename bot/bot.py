@@ -3,6 +3,7 @@
 # bot/bot.py
 # 机器人主要功能
 import datetime
+import re
 
 from queue import Empty
 from threading import Thread
@@ -30,12 +31,23 @@ class Bot(Basebot):
             # 获取当日日期
             today = datetime.date.today()
             # 格式化日期
-            formatted_date = today.strftime("%Y%m%d")
-            resmsg = self.wnl.GetWcalendar(formatted_date, ignoreHoliday="False")
-            return resmsg
-
+            date = today.strftime("%Y%m%d")
+            resmsg = self.wnl.GetWcalendar(date, ignoreHoliday="False")
+        elif '查询黄历' in msg.content:
+            # 正则匹配
+            pattern = r"查询黄历[：:](\d{8})"
+            match = re.search(pattern, msg.content)
+            # 匹配检索
+            if match:
+                date = match.group(1)
+                resmsg = self.wnl.GetWcalendar(date, ignoreHoliday="False")
+            else:
+                resmsg = "请输入正确的日期格式，例如：查询黄历：20250108"
         else:
-            return '功能开发中^_^'
+            # 待开发功能
+            resmsg = '功能开发中^_^'
+
+        return resmsg
 
     def processMsg(self, msg: WxMsg) -> None:
         """

@@ -39,7 +39,7 @@ class WCalendar(object):
     def GetWcalendar(self, date: str, **kwargs) -> str:
         """
         获取指定日期的万年历信息
-        :return:
+        :return:万年历信息
         """
         url = self.base_url + date
         params = self.params
@@ -63,21 +63,25 @@ class WCalendar(object):
         :return: 回复字符串
         """
         try:
-            if status == 1:  # 今日黄历
-                if calendar["code"] == 1:
-                    data = calendar["data"]
+            if calendar["code"] == 1:
+                data = calendar["data"]
+                if status == 1:  # 今日黄历
                     dictprocess = self.dictProcess(calendar)
                     date = datetime.strptime(data["date"], "%Y-%m-%d")  # 日期
                     res = (f"今天是{date.year}年{date.month}月{date.day}日，"
                            f"{data['yearTips']}{data['chineseZodiac']}年{data['lunarCalendar']},"
-                           f"星期{dictprocess.get('weekDay')}。"
-                           f"今日节气为{data['solarTerms']},宜{data['suit']},忌{data['avoid']}。"
-                           f"今日星座为{data['constellation']}，是这个月第{data['indexWorkDayOfMonth']}个工作日。"
+                           f"{dictprocess.get('weekDay')}。"
+                           f"\n今日节气为{data['solarTerms']}"
+                           f"\n宜:{data['suit'].replace('.', '、')}"
+                           f"\n忌:{data['avoid'].replace('.', '、')}。"
+                           f"\n今日星座为{data['constellation']}，是这个月第{data['indexWorkDayOfMonth']}个工作日。"
                            )
+                elif status == 2:  # 指定日期黄历
+                    pass
                 else:
-                    res = "请求失败"
+                    res = "功能开发中^_^"
             else:
-                res = "功能开发中^_^"
+                res = "请求失败"
         # 异常抛出模块
         except json.JSONDecodeError:
             res = "JSON 格式错误。"
@@ -86,6 +90,10 @@ class WCalendar(object):
         return res
 
     def dictProcess(self, calendar: dict) -> dict:
+        """
+        字典处理，处理收到的 JSON 信息中的字典数据
+        :return: 将处理好的字典数据
+        """
         res = {}
         data = calendar["data"]
         # 星期字典
@@ -98,7 +106,7 @@ class WCalendar(object):
             6: "星期六",
             7: "星期日"
         }
-        # 日子字典
+        # 工作性质字典
         typeMapping = {
             0: "工作日",
             1: "假日",
