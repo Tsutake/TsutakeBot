@@ -49,6 +49,12 @@ class Bot(Basebot):
             else:
                 resmsg = "请输入正确的日期格式，例如：查询黄历：20250108"
 
+        elif '获取群id' in msg.content:  # 获取当前群id
+            if self.config.Rootusr == msg.sender:
+                self.sendTextMsg(f"群id为：{msg.roomid}", msg.sender)
+                resmsg = "已私发群id"
+            else:
+                resmsg = "权限不足！"
         else:
             # 待开发功能
             resmsg = '功能开发中^_^'
