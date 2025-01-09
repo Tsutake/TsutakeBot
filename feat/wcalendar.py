@@ -67,7 +67,7 @@ class WCalendar(object):
                 if calendar["code"] == 1:
                     data = calendar["data"]
                     dictprocess = self.dictProcess(calendar)
-                    date = datetime.strptime(calendar["date"], "%Y-%m-%d")  # 日期
+                    date = datetime.strptime(data["date"], "%Y-%m-%d")  # 日期
                     res = (f"今天是{date.year}年{date.month}月{date.day}日，"
                            f"{data['yearTips']}{data['chineseZodiac']}年{data['lunarCalendar']},"
                            f"星期{dictprocess.get('weekDay')}。"
