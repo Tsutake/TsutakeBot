@@ -35,7 +35,7 @@ class Bot(Basebot):
             return resmsg
 
         else:
-            pass
+            return '功能开发中^_^'
 
     def processMsg(self, msg: WxMsg) -> None:
         """
