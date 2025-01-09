@@ -68,7 +68,7 @@ class WCalendar(object):
             if status == 1:  # 今日黄历
                 if calendar["code"] == 1:
                     data = calendar["data"]
-                    dictprocess = self.dictProcess(calendar)
+                    dictprocess = self.dictProcess(wcalendar)
                     date = datetime.strptime(calendar["date"], "%Y-%m-%d")  # 日期
                     res = (f"今天是{date.year}年{date.month}月{date.day}日，"
                            f"{data['yearTips']}{data['chineseZodiac']}年{data['lunarCalendar']},"
@@ -87,8 +87,9 @@ class WCalendar(object):
             res = f"缺少必要的字段: {str(e)}"
         return res
 
-    def dictProcess(self, calendar: Dict[str, Any]) -> dict:
+    def dictProcess(self, wcalendar: str) -> dict:
         res = {}
+        calendar = json.loads(wcalendar)
         data = calendar["data"]
         # 星期字典
         weekDayMapping = {
