@@ -36,7 +36,7 @@ class WCalendar(object):
         }
         pass
 
-    def GetWcalendar(self, date: str, **kwargs) -> str:
+    def GetWcalendar(self, date: str, status: int, **kwargs) -> str:
         """
         获取指定日期的万年历信息
         :return:万年历信息
@@ -48,7 +48,7 @@ class WCalendar(object):
         # 判断请求是否成功
         if response.status_code == 200:
             # 处理数据 JSON 数据
-            res = self.AnswerStr(response.json(), 1)
+            res = self.AnswerStr(response.json(), status)
             # 返回 JSON 格式的响应
             # return response.json()
             return res
@@ -74,10 +74,29 @@ class WCalendar(object):
                            f"\n今日节气为{data['solarTerms']}"
                            f"\n宜:{data['suit'].replace('.', '、')}"
                            f"\n忌:{data['avoid'].replace('.', '、')}。"
-                           f"\n今日星座为{data['constellation']}，是这个月第{data['indexWorkDayOfMonth']}个工作日。"
+                           f"\n今日星座为{data['constellation']}，"
                            )
+                    if data['indexWorkDayOfMonth'] > 0:
+                        res += f"是这个月第{data['indexWorkDayOfMonth']}个工作日。"
+                    else:
+                        res += f"是休息的一天。"
+
                 elif status == 2:  # 指定日期黄历
-                    pass
+                    dictprocess = self.dictProcess(calendar)
+                    date = datetime.strptime(data["date"], "%Y-%m-%d")  # 日期
+                    res = (f"{date.year}年{date.month}月{date.day}日，"
+                           f"为{data['yearTips']}{data['chineseZodiac']}年{data['lunarCalendar']}"
+                           f"{dictprocess.get('weekDay')}。\n"
+                           f"当日节气为{data['solarTerms']}\n"
+                           f"宜:{data['suit'].replace('.', '、')}\n"
+                           f"忌:{data['avoid'].replace('.', '、')}。\n"
+                           f"当日星座为{data['constellation']}，"
+                           )
+                    if data['indexWorkDayOfMonth'] > 0:
+                        res += f"是这个月第{data['indexWorkDayOfMonth']}个工作日。"
+                    else:
+                        res += f"是休息的一天。"
+
                 else:
                     res = "功能开发中^_^"
             else:

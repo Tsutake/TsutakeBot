@@ -24,25 +24,31 @@ class Bot(Basebot):
     def ReplyRecognition(self, msg: WxMsg) -> str:
         """
         回复识别
-        功能：万年历
+        功能：万年历,调用GetWcalendar(date, status, **kwargs)函数来获取黄历信息
+        date: 传入需要查询的日期
+        status: 1-今日黄历, 2-指定日期黄历
+        kwargs: 额外参数，默认需要传入ignoreHoliday="False"
+        :return 组装好的文本消息
         """
-        if '今日黄历' in msg.content:
+        if '今日黄历' in msg.content:  # 今日黄历
             # date = "20250108" # 测试
             # 获取当日日期
             today = datetime.date.today()
             # 格式化日期
             date = today.strftime("%Y%m%d")
-            resmsg = self.wnl.GetWcalendar(date, ignoreHoliday="False")
-        elif '查询黄历' in msg.content:
+            resmsg = self.wnl.GetWcalendar(date, 1, ignoreHoliday="False")
+
+        elif '查询黄历' in msg.content:  # 指定日期黄历
             # 正则匹配
             pattern = r"查询黄历[：:](\d{8})"
             match = re.search(pattern, msg.content)
             # 匹配检索
             if match:
                 date = match.group(1)
-                resmsg = self.wnl.GetWcalendar(date, ignoreHoliday="False")
+                resmsg = self.wnl.GetWcalendar(date, 2, ignoreHoliday="False")
             else:
                 resmsg = "请输入正确的日期格式，例如：查询黄历：20250108"
+
         else:
             # 待开发功能
             resmsg = '功能开发中^_^'
