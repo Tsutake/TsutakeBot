@@ -20,7 +20,7 @@ class Bot(Basebot):
         super().__init__(config, wcf)
         self.wnl = WCalendar()  # 启用万年历功能
 
-    def ReplyRecognition(self, msg: WxMsg) -> Union[Dict[str, Any], str]:
+    def ReplyRecognition(self, msg: WxMsg) -> str:
         """
         回复识别
         功能：万年历
