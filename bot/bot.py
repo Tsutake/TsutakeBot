@@ -12,6 +12,7 @@ from typing import Union, Any, Dict
 from .basebot import Basebot
 from .configuration import Config
 from feat.wcalendar import WCalendar
+from gutils.utils import Utils
 
 
 class Bot(Basebot):
@@ -19,6 +20,7 @@ class Bot(Basebot):
     # def __init__(self, wcf: Wcf, chat_type: int) -> None:
     def __init__(self, config: Config, wcf: Wcf) -> None:
         super().__init__(config, wcf)
+        self.utils = Utils(self.wcf)  # 启用工具类
         self.wnl = WCalendar()  # 启用万年历功能
 
     def ReplyRecognition(self, msg: WxMsg) -> str:
@@ -26,7 +28,7 @@ class Bot(Basebot):
         回复识别
         功能：万年历,调用GetWcalendar(date, status, **kwargs)函数来获取黄历信息
         date: 传入需要查询的日期
-        status: 1-今日黄历, 2-指定日期黄历
+        status: 1-今日黄历, 2-指定日期黄历, 3-多个日期黄历
         kwargs: 额外参数，默认需要传入ignoreHoliday="False"
         :return 组装好的文本消息
         """
@@ -36,16 +38,27 @@ class Bot(Basebot):
             today = datetime.date.today()
             # 格式化日期
             date = today.strftime("%Y%m%d")
-            resmsg = self.wnl.GetWcalendar(date, 1, ignoreHoliday="False")
+            resmsg = self.wnl.GetWcalendar(date, 'single/', 1, ignoreHoliday="False")
 
         elif '查询黄历' in msg.content:  # 指定日期黄历
             # 正则匹配
-            pattern = r"查询黄历[：:](\d{8})"
-            match = re.search(pattern, msg.content)
-            # 匹配检索
-            if match:
-                date = match.group(1)
-                resmsg = self.wnl.GetWcalendar(date, 2, ignoreHoliday="False")
+            pattern_1 = "查询黄历[：:](\d{8})"  # 匹配'查询黄历'
+            match_1 = re.search(pattern_1, msg.content)
+            if match_1:
+                pattern_2 = r"查询黄历[：:](\d{8})(?:[，,](\d{8}))*"  # 匹配多个日期
+                match_2 = re.search(pattern_2, msg.content)
+                if match_2:
+                    dates = self.utils.ReadDates(match_2)  # 提取日期
+                    if len(dates) == 1:  # 只有一个日期 -> 查询指定黄历
+                        date = dates[0]
+                        resmsg = self.wnl.GetWcalendar(date, 'single/', 2, ignoreHoliday="False")
+                    else:  # 多个日期 -> 查询多个黄历
+                        date_str = dates[0]
+                        for i in range(1, len(dates)+1):
+                            date_str += ',' + dates[i]
+                        resmsg = self.wnl.GetWcalendar(date_str, 'multi/', 3, ignoreHoliday="False")
+                else:
+                    resmsg = "若想获得多个日期，请输入正确格式，例如：查询黄历：20250108，20250109"
             else:
                 resmsg = "请输入正确的日期格式，例如：查询黄历：20250108"
 

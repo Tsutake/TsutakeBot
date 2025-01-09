@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 # 工具类
 import os
+import re
 import pandas as pd
 
 from datetime import datetime
 from wcferry import Wcf
 
 
-class Tool(object):
+class Utils(object):
 
     def __init__(self, wcf: Wcf) -> None:
         self.wcf = wcf
@@ -46,3 +47,21 @@ class Tool(object):
         msg = f"于{formatted_time}连接成功！"
         self.wcf.send_text(f"{msg}", "filehelper", "")
         return
+
+    def ReadDates(self, match) -> list:
+        """
+        提取匹配到的日期
+        """
+        if match:
+            # 获取第一次匹配的日期
+            dates = [match.group(1)]
+
+            # 在原字符串中查找所有额外的日期
+            # 使用全部匹配
+            additional_dates = re.findall(r'\d{8}', match.string)
+            # 排除已经匹配的第一个日期
+            return dates + [date for date in additional_dates if date != dates[0]]
+        return []
+
+
+

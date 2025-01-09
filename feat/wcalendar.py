@@ -29,19 +29,19 @@ from datetime import datetime
 
 class WCalendar(object):
     def __init__(self, ):
-        self.base_url = "https://www.mxnzp.com/api/holiday/single/"
+        self.base_url = "https://www.mxnzp.com/api/holiday/"
         self.params = {
             "app_id": "embeakg1jhojulyh",
             "app_secret": "3MTSJ0bF0ppLUPqaifiMgDzWIa7rgzw0"
         }
         pass
 
-    def GetWcalendar(self, date: str, status: int, **kwargs) -> str:
+    def GetWcalendar(self, date: str, api: str, status: int, **kwargs) -> str:
         """
         获取指定日期的万年历信息
         :return:万年历信息
         """
-        url = self.base_url + date
+        url = self.base_url + api + date
         params = self.params
         params.update(kwargs)
         response = requests.get(url, params=params)
@@ -66,7 +66,7 @@ class WCalendar(object):
             if calendar["code"] == 1:
                 data = calendar["data"]
                 if status == 1:  # 今日黄历
-                    dictprocess = self.dictProcess(calendar)
+                    dictprocess = self.dictProcess(calendar)  # 字典数据处理
                     date = datetime.strptime(data["date"], "%Y-%m-%d")  # 日期
                     res = (f"今天是{date.year}年{date.month}月{date.day}日，"
                            f"{data['yearTips']}{data['chineseZodiac']}年{data['lunarCalendar']},"
@@ -82,7 +82,7 @@ class WCalendar(object):
                         res += f"是休息的一天。"
 
                 elif status == 2:  # 指定日期黄历
-                    dictprocess = self.dictProcess(calendar)
+                    dictprocess = self.dictProcess(calendar) # 字典数据处理
                     date = datetime.strptime(data["date"], "%Y-%m-%d")  # 日期
                     res = (f"{date.year}年{date.month}月{date.day}日，"
                            f"为{data['yearTips']}{data['chineseZodiac']}年{data['lunarCalendar']}"
@@ -96,7 +96,23 @@ class WCalendar(object):
                         res += f"是这个月第{data['indexWorkDayOfMonth']}个工作日。"
                     else:
                         res += f"是休息的一天。"
-
+                elif status == 3:  # 多个日期黄历
+                    dictprocess = self.dictProcess(calendar)  # 字典数据处理
+                    res = ''
+                    for i in range(len(data)):
+                        date = datetime.strptime(data[i]["date"], "%Y-%m-%d")
+                        res += (f"\n{date.year}年{date.month}月{date.day}日，"
+                                f"为{data['yearTips']}{data['chineseZodiac']}年{data['lunarCalendar']}"
+                                f"{dictprocess.get('weekDay')}。\n"
+                                f"当日节气为{data['solarTerms']}\n"
+                                f"宜:{data['suit'].replace('.', '、')}\n"
+                                f"忌:{data['avoid'].replace('.', '、')}。\n"
+                                f"当日星座为{data['constellation']}，"
+                                )
+                        if data['indexWorkDayOfMonth'] > 0:
+                            res += f"是这个月第{data['indexWorkDayOfMonth']}个工作日。"
+                        else:
+                            res += f"是休息的一天。"
                 else:
                     res = "功能开发中^_^"
             else:
