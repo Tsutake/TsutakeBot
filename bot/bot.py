@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # bot/bot.py
 # 机器人主要功能
+import datetime
+
 from queue import Empty
 from threading import Thread
 from wcferry import Wcf, WxMsg
@@ -21,11 +23,15 @@ class Bot(Basebot):
     def ReplyRecognition(self, msg: WxMsg) -> Union[Dict[str, Any], str]:
         """
         回复识别
-        :return:
+        功能：万年历
         """
-        if '万年历' in msg.content:
-            date = "20250108"
-            resmsg = self.wnl.GetWcalendar(date, ignoreHoliday="False")
+        if '今日黄历' in msg.content:
+            # date = "20250108" # 测试
+            # 获取当日日期
+            today = datetime.date.today()
+            # 格式化日期
+            formatted_date = today.strftime("%Y%m%d")
+            resmsg = self.wnl.GetWcalendar(formatted_date, ignoreHoliday="False")
             return resmsg
 
         else:
