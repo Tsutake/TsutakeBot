@@ -49,3 +49,7 @@ report_reminder:
 
 rootusr:
   username: []  # 超级管理员用户
+
+ichat:  # ----本地ollama配置信息----
+  model: qwen
+  prompt: 你叫小明，是鹤竹装载的本地智能机器人。
