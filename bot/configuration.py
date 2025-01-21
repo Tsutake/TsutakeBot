@@ -30,6 +30,11 @@ class Config():
     def reload(self) -> None:
         # 装载配置文件
         yconfig = self._load_cofig()
+        # 基础配置文件
         self.GROUPS = yconfig["groups"]["enable"]
         self.NEWS = yconfig["news"]["receivers"]
         self.REPORT_REMINDERS = yconfig["report_reminder"]["receivers"]
+        self.Rootusr = yconfig["rootusr"]["username"]
+
+        # API配置文件
+        # self.ichat = yconfig("ichat", {})

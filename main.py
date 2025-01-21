@@ -5,7 +5,7 @@ import signal
 
 from wcferry import Wcf
 from bot.bot import Bot
-from gentool.tool import Tool
+from gutils.utils import Utils
 from bot.configuration import Config
 
 
@@ -19,10 +19,10 @@ def main():
     signal.signal(signal.SIGINT, handler)
 
     # 工具功能开启
-    BotTool = Tool(wcf)
-    BotTool.SendTestText()  # 发送测试文本
+    BotUtils = Utils(wcf)
+    BotUtils.SendTestText()  # 发送测试文本
     # 获取所有联系人到本地Excel文件中
-    # BotTool.GetContactsonLocal()
+    # BotUtils.GetContactsonLocal()
 
     # bot功能开启
     bot = Bot(config, wcf)
