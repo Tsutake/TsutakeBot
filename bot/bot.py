@@ -22,7 +22,7 @@ class Bot(Basebot):
     def __init__(self, config: Config, wcf: Wcf) -> None:
         super().__init__(config, wcf)
         self.utils = Utils(self.wcf)  # 启用工具类
-        self.wnl = WCalendar()  # 启用万年历功能
+        self.wnl = WCalendar(config)  # 启用万年历功能
 
     def ReplyRecognition(self, msg: WxMsg) -> str:
         """
@@ -92,9 +92,8 @@ class Bot(Basebot):
                     return
 
             if msg.is_at(self.wxid):  # 被@
-                return
-                # At功能暂时关闭
-                # self.toAt(msg)
+                # return
+                self.toAt(msg)
 
             else:  # 其他消息
                 pass
@@ -111,17 +110,16 @@ class Bot(Basebot):
             pass
 
         if msg.type == 0x01:  # 文本消息
-            if msg.from_self():
-                if msg.content == "^更新$":
-                    self.config.reload()
-                    self.LOG.info("已更新")
-                    self.wcf.send_text("更新配置成功", "TsutakeMini", "")
+            if msg.from_self():  # 来自自己的消息
+                self.fromSelf(msg)
+
             else:
-                # 回复识别功能暂时关闭
-                # res = self.ReplyRecognition(msg)  # 私聊的回复
-                chat = ichat(msg.sender, msg.content)
-                res = chat.iChatWithLLM()
-                self.sendTextMsg(res, msg.sender)
+                res = self.ReplyRecognition(msg)  # 私聊的回复
+                if res == "功能开发中^_^":
+                    chat = ichat(self.config, msg.sender, msg.content)
+                    self.sendTextMsg(chat.iChatWithLLM(), msg.sender)
+                else:
+                    self.sendTextMsg(res, msg.sender)
 
     def enableReceivingMsg(self) -> None:
         """
@@ -176,9 +174,37 @@ class Bot(Basebot):
         """处理被 @ 消息
         :return:
         """
-        # 回复识别功能暂时关闭
-        # res = self.ReplyRecognition(msg)  # 被@的回复
-        self.sendTextMsg(res, msg.roomid, msg.sender)
+        res = self.ReplyRecognition(msg)  # 被@的回复
+        if res == "功能开发中^_^":
+            chat = ichat(self.config, msg.sender, msg.content, msg.roomid)
+            self.sendTextMsg(chat.iChatWithLLM(), msg.roomid, msg.sender)
+        else:
+            self.sendTextMsg(res, msg.roomid, msg.sender)
+        return True
+
+    def fromSelf(self, msg: WxMsg) -> bool:
+        """
+        处理来自自己的消息
+        :return:
+        """
+        if msg.content in ["help", "帮助"]:
+            help_messages = ("你好哦～以下管理员权限指令:\n"
+                             "^更新配置$ 可以重新装载配置文件\n"
+                             "^更新模板$ 可以重新把新模板的内容更新至配置文件\n"
+                             "^重制配置文件$ 可以重新生成配置文件\n")
+            self.wcf.send_text(help_messages, "TsutakeMini", "")
+        elif msg.content == "^更新配置$":
+            self.config.reload()
+            self.LOG.info("已更新配置")
+            self.wcf.send_text("更新配置成功", "TsutakeMini", "")
+        elif msg.content == "^更新模板$":
+            self.config.update_config()
+            self.LOG.info("已更新模板")
+            self.wcf.send_text("更新模板成功", "TsutakeMini", "")
+        elif msg.content == "^重制配置文件$":
+            self.config.remake_config()
+            self.LOG.info("已重制配置文件")
+            self.wcf.send_text("重制配置文件成功", "TsutakeMini", "")
         return True
 
     def TempReply(self, msg: WxMsg) -> None:

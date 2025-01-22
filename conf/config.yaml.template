@@ -51,5 +51,17 @@ rootusr:
   username: []  # 超级管理员用户
 
 ichat:  # ----本地ollama配置信息----
-  model: qwen
-  prompt: 你叫小明，是鹤竹装载的本地智能机器人。
+  model:
+  prompt:
+
+DBserver: # ----本地数据库配置信息----
+  host:
+  user:
+  password:
+  database:
+
+API: # ----接口配置信息----
+  # 万年历接口信息
+  Wcalendar_url:
+  Wcalendar_appid:
+  Wcalendar_appsecret:

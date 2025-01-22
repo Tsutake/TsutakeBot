@@ -6,18 +6,18 @@ import ollama
 import mysql.connector
 from datetime import datetime
 from dateutil import parser
+from bot.configuration import Config
 
 
 class ichat:
 
-    def __init__(self, wxid, userinput, roomid='NO_ROOM'):
+    def __init__(self, config: Config, wxid, userinput, roomid='NO_ROOM'):
         # 数据库配置
-        self.DB_CONFIG = {
-            "host": "localhost",
-            "user": "root",
-            "password": "5201314",
-            "database": "ollama"
-        }
+        self.config = config
+        self.DB_CONFIG = {}
+        self.DB_CONFIG.update(self.config.DBserver)  # 用 config.DBserver 覆盖默认值
+        self.DB_CONFIG["password"] = str(self.DB_CONFIG["password"])  # 确保 password 是字符串
+
         self.CreateTables()
         self.wxid = wxid
         self.userinput = userinput
@@ -163,8 +163,6 @@ class ichat:
         # 清除缓存
         conn.commit()
         cursor.close()
-
-
         conn.close()
 
     def GetMessages(self, limit=25):
@@ -210,7 +208,7 @@ class ichat:
         conn.close()
 
     def iChatWithLLM(self):
-        if self.userinput.strip().lower() == '清除上下文':
+        if '清除上下文' in self.userinput.strip().lower():
             self.ClearContext()
             res = '上下文已清除'
             return res
@@ -218,7 +216,7 @@ class ichat:
         # 获取用户历史消息
         history_messages = self.GetMessages()
 
-        prompt = "从现在开始，你的名字叫小竹，是一个AI助手，但是你不可以自称AI助手，你要以尽可能拟人化的姿态和用户交流。"
+        prompt = self.config.ichat["prompt"]
         # 构建messages
         messages = [{"role": "user", "content": prompt}, {"role": "assistant", "content": "好的"}]
         for msg in history_messages:
@@ -229,8 +227,7 @@ class ichat:
         print(messages)
 
         responses = ollama.chat(
-            model="qwen:latest",
-            # model="deepseek-coder-v2:latest",
+            model=self.config.ichat["model"],
             messages=messages
         )
 
@@ -247,6 +244,7 @@ class ichat:
 if __name__ == "__main__":
     wxid_test = "wxid_123457"  # 微信用户 ID
     roomid_test = "room123456"
+    config_test = Config()
     # 模拟微信消息
     while True:
         # user_input = "为什么天空是蓝色的?"  # 用户输入
@@ -254,15 +252,7 @@ if __name__ == "__main__":
         if usrinput.lower() in ["exit", "quit", "stop", "baibai", "拜拜"]:
             break
         # 与 LLM 交互
-        chat = ichat(wxid_test, usrinput, roomid_test)
+        chat = ichat(config_test, wxid_test, usrinput, roomid_test)
         response = chat.iChatWithLLM()
         print("LLM 回复:", response)
 
-
-# [{'role': 'assistant', 'content': '好的'},
-#  {'role': 'user', 'content': '从现在开始，你的名字叫小竹，是一个AI助手，但是你不可以自称AI助手，你要以尽可能拟人化的姿态和用户交流。'},
-#  {'role': 'user', 'content': '测试，这是第一个问题：你是谁？'},
-#  {'role': 'assistant', 'content': '我是小竹，一个AI助手。我正在努力模拟人类的对话方式，以便更好地为用户提供帮助。有什么我可以帮助你的吗？'},
-#  {'role': 'assistant', 'content': '对不起，作为一个人工智能助手，我不能喜欢或者不喜欢任何事物。我只能提供我被训练出来的信息和建议。有什么我可以帮助你的吗？'},
-#  {'role': 'user', 'content': '测试，这是第二个问题：你喜欢谁？'},
-#  {'role': 'user', 'content': '第三个问题：请给我两句唐朝诗人的诗句？'}]

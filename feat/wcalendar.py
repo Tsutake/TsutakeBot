@@ -25,15 +25,15 @@ import json
 
 from typing import Union, Any, Dict
 from datetime import datetime
+from bot.configuration import Config
 
 
 class WCalendar(object):
-    def __init__(self, ):
-        self.base_url = "https://www.mxnzp.com/api/holiday/"
-        self.params = {
-            "app_id": "embeakg1jhojulyh",
-            "app_secret": "3MTSJ0bF0ppLUPqaifiMgDzWIa7rgzw0"
-        }
+    def __init__(self, config: Config):
+        self.base_url = config.API["Wcalendar_url"]
+        appid = config.API["Wcalendar_appid"]
+        appsecret = config.API["Wcalendar_appsecret"]
+        self.params = {"app_id": appid, "app_secret": appsecret}
         pass
 
     def GetWcalendar(self, date: str, api: str, status: int, **kwargs) -> str:
@@ -158,3 +158,11 @@ class WCalendar(object):
         res['type'] = typeMapping.get(data["type"], "未知类型")
         res['detailsType'] = detailsMapping.get(data["detailsType"], "未知详细类型")
         return res
+
+if __name__ == "__main__":
+    config_test = Config()
+    Wcalendar_test = WCalendar(config_test)
+
+    date_test = "20250122"
+    resmsg = Wcalendar_test.GetWcalendar(date_test, 'single/', 1, ignoreHoliday="False")
+    print(resmsg)
