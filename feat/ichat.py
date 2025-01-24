@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # feat.ichat feat包
 # LLM模型接入
+import re
 import ollama
 import mysql.connector
 from datetime import datetime
@@ -238,6 +239,10 @@ class ichat:
         self.SaveMessages("assistant", responses["message"]["content"], "chat_messages_backup_")
 
         res = responses["message"]["content"]
+        if self.config.ichat["model"] == "deepseek-r1:14b":
+            # 如果采用的是deepseek-r1模型，删除depth内容。
+            res = re.sub(r'<think>.*?</think>', '', res, flags=re.DOTALL)
+            res = re.sub(r'\n\s*\n', '\n', res).strip()
         return res
 
 
